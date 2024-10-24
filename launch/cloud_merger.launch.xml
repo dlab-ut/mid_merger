@@ -1,0 +1,93 @@
+<?xml version="1.0"?>
+<launch>
+  <!-- π = 3.141592, π/2 = 1.5707963, π/4 = 0.78539 -->
+
+  <arg name="use_sim_time" default="true"/>
+  <arg name="use_intra_process_comms" default="true"/>
+  <arg name="container_name" default="livox_pcd_filter_container"/>
+
+  <arg name="front_left_lidar_topic" default="/livox/lidar_192_168_1_150"/>
+  <arg name="front_left_lidar_x" default="0.0"/>
+  <arg name="front_left_lidar_y" default="0.0"/>
+  <arg name="front_left_lidar_z" default="0.0"/>
+  <arg name="front_left_lidar_roll" default="3.141592"/>
+  <arg name="front_left_lidar_pitch" default="0.0"/>
+  <arg name="front_left_lidar_yaw" default="0.0"/> <!--コードが前側の場合は3.141592-->
+  <arg name="front_right_lidar_topic" default="/livox/lidar_192_168_1_170"/>
+  <arg name="front_right_lidar_x" default="0.0"/>
+  <arg name="front_right_lidar_y" default="0.26"/>
+  <arg name="front_right_lidar_z" default="0.0"/>
+  <arg name="front_right_lidar_roll" default="1.507963"/>
+  <arg name="front_right_lidar_pitch" default="3.141592"/>
+  <arg name="front_right_lidar_yaw" default="1.5707963"/>
+  <arg name="rear_lidar_topic" default="/livox/lidar_192_168_1_165"/>
+  <arg name="rear_lidar_x" default="0.0"/>
+  <arg name="rear_lidar_y" default="-0.26"/>
+  <arg name="rear_lidar_z" default="0.0"/>
+  <arg name="rear_lidar_roll" default="-1.5707963"/>
+  <arg name="rear_lidar_pitch" default="3.141592"/>
+  <arg name="rear_lidar_yaw" default="-1.5707963"/>
+  <arg name="lidar_frame_id" default="livox_frame"/>
+  <arg name="laser_topic_name" default="livox/scan"/>
+  <arg name="pcd_pub_topic_head" default="sensing/livox"/>
+
+  <set_parameter name="use_sim_time" value="$(var use_sim_time)"/>
+
+  <group>
+    <!-- <push-ros-namespace namespace="utils"/> -->
+    <node_container pkg="rclcpp_components" exec="component_container_mt" name="$(var container_name)" namespace="" output="screen">
+      <composable_node pkg="mid_merger" plugin="tc_livox_utils::PcdFilter" name="cloud_merger" namespace="">
+        <param name="front_left_lidar_sub_topic" value="$(var front_left_lidar_topic)"/>
+        <param name="front_left_lidar_x" value="$(var front_left_lidar_x)"/>
+        <param name="front_left_lidar_y" value="$(var front_left_lidar_y)"/>
+        <param name="front_left_lidar_z" value="$(var front_left_lidar_z)"/>
+        <param name="front_left_lidar_roll" value="$(var front_left_lidar_roll)"/>
+        <param name="front_left_lidar_pitch" value="$(var front_left_lidar_pitch)"/>
+        <param name="front_left_lidar_yaw" value="$(var front_left_lidar_yaw)"/>
+        <param name="front_right_lidar_sub_topic" value="$(var front_right_lidar_topic)"/>
+        <param name="front_right_lidar_x" value="$(var front_right_lidar_x)"/>
+        <param name="front_right_lidar_y" value="$(var front_right_lidar_y)"/>
+        <param name="front_right_lidar_z" value="$(var front_right_lidar_z)"/>
+        <param name="front_right_lidar_roll" value="$(var front_right_lidar_roll)"/>
+        <param name="front_right_lidar_pitch" value="$(var front_right_lidar_pitch)"/>
+        <param name="front_right_lidar_yaw" value="$(var front_right_lidar_yaw)"/>
+        <param name="rear_lidar_sub_topic" value="$(var rear_lidar_topic)"/>
+        <param name="rear_lidar_x" value="$(var rear_lidar_x)"/>
+        <param name="rear_lidar_y" value="$(var rear_lidar_y)"/>
+        <param name="rear_lidar_z" value="$(var rear_lidar_z)"/>  
+        <param name="rear_lidar_roll" value="$(var rear_lidar_roll)"/>
+        <param name="rear_lidar_pitch" value="$(var rear_lidar_pitch)"/>
+        <param name="rear_lidar_yaw" value="$(var rear_lidar_yaw)"/>
+        <param name="lidar_frame_id" value="$(var lidar_frame_id)"/>
+        <param name="laser_pub_topic" value="$(var laser_topic_name)"/>
+        <param name="voxel_leaf_size" value="0.02"/>
+        <param name="num_threads" value="14"/>
+        <param name="pcd_height_max" value="1.50"/>
+        <param name="pcd_height_min" value="0.05"/>
+        <param name="normals_mean_k" value="100"/>
+        <param name="ground_angle_threshold" value="10.0"/>
+        <param name="use_global_angle_ground_removal" value="false"/>
+        <param name="use_voxel_grid_filter" value="true"/>
+        <param name="use_z_threshold_ground_removal" value="false"/>
+        <param name="use_transform_by_topic_name" value="true"/>
+        <param name="pcd_pub_topic_head" value="$(var pcd_pub_topic_head)"/>
+        <extra_arg name="use_intra_process_comms" value="true" />
+      </composable_node>
+    </node_container>
+  </group>
+
+  <!--
+  <node
+    pkg="tf2_ros"
+    exec="static_transform_publisher"
+    name="static_tf_pub_livox_to_base"
+    args="0 0 0 0 0 0 livox_frame livox_link"/>
+    -->
+
+  <node
+    pkg="tf2_ros"
+    exec="static_transform_publisher"
+    name="static_tf_pub_frame_to_livox"
+    args="0.234214 0 0 0 0 0 base_link livox_frame"/>
+
+</launch>
